@@ -20,7 +20,7 @@ button,input,select,textarea{font:inherit}.hidden{display:none!important}.app{ma
 .ring:after{content:"";position:absolute;inset:11px;background:#111216;border-radius:50%}.ring b{position:relative;z-index:1;font-size:29px;color:var(--gold)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.metric{padding:20px}.metric strong{display:block;font-size:29px;margin:9px 0 4px}
 .bar{height:9px;background:#2b2d33;border-radius:999px;overflow:hidden;margin-top:12px}.bar span{display:block;height:100%;background:var(--gold);transition:width .45s cubic-bezier(.2,.8,.2,1)}
-.waterCard{position:relative;overflow:hidden}.waterWave{position:absolute;left:0;bottom:0;height:0%;width:100%;background:linear-gradient(180deg,#5aa7ff22,#5aa7ff18);transition:height .45s ease;pointer-events:none}
+.waterCard{position:relative;overflow:hidden}.waterWave{position:absolute;left:0;bottom:0;height:0%;width:100%;background:linear-gradient(180deg,#5aa7ff16,#5aa7ff0d);transition:height .45s ease;pointer-events:none}
 .waterCard>*{position:relative;z-index:1}.section{margin-top:26px}.section h2{font-size:25px;margin:0 0 12px}
 .tasks{padding:0 18px}.task{display:flex;align-items:center;gap:14px;min-height:82px;border-bottom:1px solid var(--line);cursor:pointer}
 .task:last-child{border-bottom:0}.check{width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-weight:900;flex:0 0 auto;transition:.2s}
@@ -94,6 +94,7 @@ input,select,textarea{width:100%;margin-top:7px;background:#0d0e11;border:1px so
           <button class="btn secondary" onclick="removeWater(500)">−500</button>
           <button class="btn secondary" onclick="removeWater(750)">−750</button>
         </div>
+        <button class="btn danger" style="width:100%;margin-top:8px" onclick="resetWaterToday()">Reiniciar agua de hoy</button>
       </div>
       <div class="card metric">
         <span class="muted">Peso</span><strong id="sumWeight">—</strong>
@@ -272,6 +273,14 @@ async function removeWater(amount){
  }
  toast(`−${amount-remaining} ml`);await refresh();
 }
+async function resetWaterToday(){
+ if(!currentWater.length)return toast('El agua de hoy ya está en cero');
+ if(!confirm('¿Querés borrar todos los registros de agua de hoy?'))return;
+ const ids=currentWater.map(x=>x.id);
+ const {error}=await sb.from('water_entries').delete().in('id',ids);
+ if(error)return toast(error.message);
+ toast('Agua reiniciada');await refresh();
+}
 async function deleteRow(table,id){
  const {error}=await sb.from(table).delete().eq('id',id);
  if(error)return toast(error.message);await refresh();
@@ -301,8 +310,9 @@ async function render(){
  $('sumMacros').textContent=`P ${totals.p} g · C ${totals.c} g · G ${totals.f} g`;
  $('sumActivity').textContent=`${currentWorkouts.reduce((a,w)=>a+w.active_calories,0)} kcal`;
  $('sumWater').textContent=`${waterTotal} / ${waterGoal} ml`;
+ if(waterTotal>10000)$('sumWater').title='El valor parece demasiado alto. Podés corregirlo con los botones − o reiniciar el agua de hoy.';
  const waterPct=Math.min(100,waterTotal/waterGoal*100);
- $('waterBar').style.width=waterPct+'%';$('waterWave').style.height=Math.min(100,waterPct*.36)+'%';
+ $('waterBar').style.width=waterPct+'%';$('waterWave').style.height=Math.min(22,waterPct*.18)+'%';
  $('sumWeight').textContent=currentWeights[0]?`${currentWeights[0].weight_kg} kg`:'—';
 
  const t=profile?.task_settings||defaultTasks,weekday=new Date().getDay(),weightToday=[1,3,5].includes(weekday),defs=[];
