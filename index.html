@@ -1,136 +1,317 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#0a0a0b"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090b">
 <title>Physique du rôle</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#09090b;--card:#151518;--line:#2a2a30;--gold:#d2ac5b;--text:#fff;--muted:#a5a5ad}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
-button,input,select{font:inherit}
-.app{max-width:760px;margin:auto;padding:20px 16px 110px}
-.hidden{display:none!important}
-.brand{font-size:34px;font-weight:900}
-.gold{color:var(--gold)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin:14px 0}
-.row{display:flex;gap:10px;align-items:center}
-.between{justify-content:space-between}
-.muted{color:var(--muted)}
-input,select{width:100%;background:#0d0d10;border:1px solid #35353b;border-radius:13px;color:#fff;padding:13px;margin-top:7px}
-.btn{border:0;border-radius:13px;padding:13px 15px;font-weight:800}
-.primary{background:var(--gold);color:#111}
-.secondary{background:#222228;color:#fff}
-.danger{background:#401a22;color:#ff9cac}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.metric b{font-size:26px;display:block;margin-top:6px}
-.task{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
-.task:last-child{border-bottom:0}
-.check{width:38px;height:38px;border:2px solid var(--gold);border-radius:50%;display:grid;place-items:center;color:var(--gold)}
-.task.done .check{background:var(--gold);color:#111}
-.task main{flex:1}
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,760px);display:grid;grid-template-columns:repeat(5,1fr);background:#101014ee;border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
-.nav button{background:none;border:0;color:#888;padding:8px 2px}
-.nav button.active{color:var(--gold)}
-.page{display:none}
-.page.active{display:block}
-.modal{position:fixed;inset:0;background:#000c;display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:20}
-.modal.show{display:flex}
-.sheet{width:min(100%,720px);background:#17171b;border:1px solid #34343a;border-radius:24px 24px 16px 16px;padding:18px;max-height:90vh;overflow:auto}
-.item{padding:12px 0;border-bottom:1px solid var(--line)}
-.item:last-child{border-bottom:0}
-.thumb{width:74px;height:74px;border-radius:12px;object-fit:cover;background:#222}
-.auth{max-width:460px;margin:8vh auto}
-.hero{padding:24px 0}
-.hero h1{font-size:42px;margin:0}
-.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#24242a;border:1px solid #3b3b42;padding:10px 16px;border-radius:999px;display:none;z-index:30}
-.toast.show{display:block}
-@media(max-width:520px){.grid{grid-template-columns:1fr}.brand{font-size:30px}}
+:root{--bg:#09090b;--card:#151518;--line:#2b2c32;--gold:#d3ad5c;--text:#fff;--muted:#a6a7af;--danger:#ff8292}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}.app{max-width:760px;margin:auto;padding:20px 16px 112px}
+.brand{font-size:34px;font-weight:900;letter-spacing:-1.2px}.gold{color:var(--gold)}.muted{color:var(--muted)}
+.card{background:linear-gradient(145deg,#ffffff08,#ffffff02),var(--card);border:1px solid var(--line);border-radius:22px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.date{color:var(--gold);font-weight:800;text-transform:capitalize;margin-top:4px}
+.btn{border:0;border-radius:14px;padding:13px 16px;font-weight:900;cursor:pointer}.primary{background:var(--gold);color:#111}.secondary{background:#222329;color:#fff}.danger{background:#3d1b22;color:var(--danger)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.metric{padding:20px}.metric strong{display:block;font-size:29px;margin:9px 0 4px}
+.bar{height:8px;background:#2b2d33;border-radius:999px;overflow:hidden;margin-top:12px}.bar span{display:block;height:100%;background:var(--gold)}
+.section{margin-top:26px}.section h2{font-size:25px;margin:0 0 12px}.tasks{padding:0 18px}.task{display:flex;align-items:center;gap:14px;min-height:82px;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}.check{width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-weight:900;flex:0 0 auto}
+.task.done .check{background:var(--gold);color:#111}.task main{flex:1;min-width:0}.task b{display:block;font-size:18px}.task small{display:block;margin-top:4px}.task .go{font-size:25px;color:#777}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.quick button{padding:11px 8px}
+.nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,760px);display:grid;grid-template-columns:repeat(5,1fr);background:#101014f2;border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:10}
+.nav button{background:none;border:0;color:#85858e;padding:6px 2px}.nav button b{display:block;font-size:19px}.nav button small{font-size:11px}.nav button.active{color:var(--gold)}
+.page{display:none}.page.active{display:block}.pageTitle{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.list{padding:4px 18px}.item{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}
+.item main{flex:1;min-width:0}.thumb{width:74px;height:74px;border-radius:14px;object-fit:cover;background:#222}.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.auth{max-width:460px;margin:8vh auto}.auth .card{padding:22px}.auth label{display:block;margin:12px 0}
+input,select,textarea{width:100%;margin-top:7px;background:#0d0e11;border:1px solid #373941;color:#fff;border-radius:14px;padding:13px}
+.modal{position:fixed;inset:0;background:#000c;display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}
+.sheet{width:min(100%,720px);max-height:92vh;overflow:auto;background:#17181c;border:1px solid #34363e;border-radius:24px 24px 16px 16px;padding:20px}
+.sheet h2{margin:0 0 12px}.sheet label{display:block;margin:11px 0}.sheetActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.settings{padding:4px 18px}.setting{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)}
+.setting:last-child{border-bottom:0}.toast{position:fixed;left:50%;bottom:102px;transform:translateX(-50%);background:#23252b;border:1px solid #3b3e46;padding:11px 16px;border-radius:999px;display:none;z-index:30}.toast.show{display:block}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.brand{font-size:31px}.quick{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
+
 <div id="auth" class="app auth">
-  <div class="hero"><div class="brand">Physique du <span class="gold">rôle</span></div><p class="muted">Tu día, tus hábitos y tu progreso.</p></div>
+  <div class="brand">Physique du <span class="gold">rôle</span></div>
+  <p class="muted">Tu día, tus hábitos y tu progreso.</p>
   <div class="card">
     <h2>Ingresar</h2>
-    <label>Email<input id="email" type="email" autocomplete="email"/></label>
-    <label>Contraseña<input id="password" type="password" autocomplete="current-password"/></label>
-    <div class="row" style="margin-top:14px"><button class="btn primary" onclick="login()">Ingresar</button><button class="btn secondary" onclick="signup()">Crear cuenta</button></div>
+    <label>Email<input id="email" type="email" autocomplete="email"></label>
+    <label>Contraseña<input id="password" type="password" autocomplete="current-password"></label>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn primary" onclick="login()">Ingresar</button>
+      <button class="btn secondary" onclick="signup()">Crear cuenta</button>
+    </div>
     <p id="authMsg" class="muted"></p>
   </div>
 </div>
 
 <div id="main" class="app hidden">
   <section id="inicio" class="page active">
-    <div class="row between"><div><div class="brand">Mi día</div><div id="todayLabel" class="gold"></div></div><button class="btn secondary" onclick="logout()">Salir</button></div>
-    <div class="grid">
-      <div class="card metric"><span class="muted">Consumido</span><b id="sumKcal">0 kcal</b><small id="sumMacros" class="muted">P 0 · C 0 · G 0</small></div>
-      <div class="card metric"><span class="muted">Actividad</span><b id="sumActivity">0 kcal</b><small class="muted">Carga manual por ahora</small></div>
-      <div class="card metric"><span class="muted">Agua</span><b id="sumWater">0 ml</b><button class="btn secondary" style="margin-top:10px" onclick="addWater(500)">+500 ml</button></div>
-      <div class="card metric"><span class="muted">Peso</span><b id="sumWeight">—</b><button class="btn secondary" style="margin-top:10px" onclick="openWeight()">Registrar</button></div>
+    <div class="top">
+      <div><div class="brand">Mi día</div><div id="todayLabel" class="date"></div></div>
+      <button class="btn secondary" onclick="logout()">Salir</button>
     </div>
-    <div class="card"><h2>Tareas de hoy</h2><div id="tasks"></div></div>
+
+    <div class="grid">
+      <div class="card metric">
+        <span class="muted">Consumido</span><strong id="sumKcal">0 kcal</strong>
+        <small id="sumMacros" class="muted">P 0 g · C 0 g · G 0 g</small>
+      </div>
+      <div class="card metric">
+        <span class="muted">Actividad</span><strong id="sumActivity">0 kcal</strong>
+        <small class="muted">Carga manual por ahora</small>
+      </div>
+      <div class="card metric">
+        <span class="muted">Agua</span><strong id="sumWater">0 / 3000 ml</strong>
+        <div class="bar"><span id="waterBar" style="width:0%"></span></div>
+        <div class="quick">
+          <button class="btn secondary" onclick="addWater(250)">+250</button>
+          <button class="btn secondary" onclick="addWater(500)">+500</button>
+          <button class="btn secondary" onclick="addWater(750)">+750</button>
+        </div>
+      </div>
+      <div class="card metric">
+        <span class="muted">Peso</span><strong id="sumWeight">—</strong>
+        <button class="btn secondary" style="margin-top:10px" onclick="openWeight()">Registrar</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Tareas de hoy</h2>
+      <div id="tasks" class="card tasks"></div>
+    </div>
   </section>
 
-  <section id="alimentacion" class="page"><div class="row between"><div class="brand">Alimentación</div><button class="btn primary" onclick="openMeal()">+ Comida</button></div><div id="mealList" class="card"></div></section>
-  <section id="entreno" class="page"><div class="row between"><div class="brand">Entreno</div><button class="btn primary" onclick="openWorkout()">+ Entreno</button></div><div id="workoutList" class="card"></div></section>
-  <section id="progreso" class="page"><div class="row between"><div class="brand">Progreso</div><button class="btn primary" onclick="openWeight()">+ Peso</button></div><div id="weightList" class="card"></div></section>
-  <section id="perfil" class="page"><div class="brand">Perfil</div><div class="card"><h3>Configuración</h3><label>Objetivo de agua (ml)<input id="waterGoal" type="number" value="3000"/></label><button class="btn primary" style="margin-top:12px" onclick="saveProfile()">Guardar</button></div></section>
+  <section id="alimentacion" class="page">
+    <div class="pageTitle"><div><div class="brand">Alimentación</div><p class="muted">Foto o carga manual.</p></div><button class="btn primary" onclick="openMeal()">+ Comida</button></div>
+    <div id="mealList" class="card list"></div>
+  </section>
+
+  <section id="entreno" class="page">
+    <div class="pageTitle"><div><div class="brand">Entreno</div><p class="muted">Después lo traeremos del reloj.</p></div><button class="btn primary" onclick="openWorkout()">+ Entreno</button></div>
+    <div id="workoutList" class="card list"></div>
+  </section>
+
+  <section id="progreso" class="page">
+    <div class="pageTitle"><div><div class="brand">Progreso</div><p class="muted">Historial de peso.</p></div><button class="btn primary" onclick="openWeight()">+ Peso</button></div>
+    <div id="weightList" class="card list"></div>
+  </section>
+
+  <section id="perfil" class="page">
+    <div class="brand">Perfil</div>
+    <div class="card settings">
+      <div class="setting"><span>Desayuno</span><input id="setBreakfast" type="checkbox" style="width:auto"></div>
+      <div class="setting"><span>Almuerzo</span><input id="setLunch" type="checkbox" style="width:auto"></div>
+      <div class="setting"><span>Merienda</span><input id="setSnack" type="checkbox" style="width:auto"></div>
+      <div class="setting"><span>Pre-entreno</span><input id="setPre" type="checkbox" style="width:auto"></div>
+      <div class="setting"><span>Cena</span><input id="setDinner" type="checkbox" style="width:auto"></div>
+      <div class="setting"><span>Creatina</span><input id="setCreatine" type="checkbox" style="width:auto"></div>
+      <div class="setting"><span>Agua</span><input id="setWater" type="checkbox" style="width:auto"></div>
+      <div class="setting"><span>Entrenamiento</span><input id="setWorkout" type="checkbox" style="width:auto"></div>
+      <label style="display:block;padding:14px 0">Objetivo de agua (ml)<input id="waterGoal" type="number" value="3000"></label>
+      <button class="btn primary" style="width:100%;margin:8px 0 16px" onclick="saveProfile()">Guardar configuración</button>
+    </div>
+  </section>
 </div>
 
 <nav id="nav" class="nav hidden">
-<button class="active" data-page="inicio">⌂<br><small>Inicio</small></button>
-<button data-page="alimentacion">🍴<br><small>Alimentación</small></button>
-<button data-page="entreno">🏋<br><small>Entreno</small></button>
-<button data-page="progreso">↗<br><small>Progreso</small></button>
-<button data-page="perfil">●<br><small>Perfil</small></button>
+  <button class="active" data-page="inicio"><b>⌂</b><small>Inicio</small></button>
+  <button data-page="alimentacion"><b>🍴</b><small>Alimentación</small></button>
+  <button data-page="entreno"><b>🏋</b><small>Entreno</small></button>
+  <button data-page="progreso"><b>↗</b><small>Progreso</small></button>
+  <button data-page="perfil"><b>●</b><small>Perfil</small></button>
 </nav>
 
-<div id="mealModal" class="modal"><div class="sheet"><h2>Registrar comida</h2><label>Tipo<select id="mealType"><option value="breakfast">Desayuno</option><option value="lunch" selected>Almuerzo</option><option value="snack">Merienda</option><option value="pre_workout">Pre-entreno</option><option value="dinner">Cena</option><option value="other">Otra</option></select></label><label>Foto<input id="mealPhoto" type="file" accept="image/*" capture="environment"/></label><label>Descripción<input id="mealDesc"/></label><div class="grid"><label>Calorías<input id="mealK" type="number" value="0"/></label><label>Proteínas<input id="mealP" type="number" value="0"/></label><label>Carbohidratos<input id="mealC" type="number" value="0"/></label><label>Grasas<input id="mealF" type="number" value="0"/></label></div><div class="row" style="margin-top:14px"><button class="btn primary" onclick="saveMeal()">Guardar</button><button class="btn secondary" onclick="closeModal('mealModal')">Cancelar</button></div></div></div>
-<div id="workoutModal" class="modal"><div class="sheet"><h2>Registrar entrenamiento</h2><label>Actividad<select id="workoutType"><option>Gimnasio</option><option>Running</option><option>Tenis</option><option>Fútbol</option><option>Bicicleta</option><option>Descanso</option></select></label><label>Duración (min)<input id="workoutMin" type="number" value="60"/></label><label>Calorías activas<input id="workoutKcal" type="number" value="0"/></label><div class="row" style="margin-top:14px"><button class="btn primary" onclick="saveWorkout()">Guardar</button><button class="btn secondary" onclick="closeModal('workoutModal')">Cancelar</button></div></div></div>
-<div id="weightModal" class="modal"><div class="sheet"><h2>Registrar peso</h2><label>Peso (kg)<input id="weightValue" type="number" step="0.1"/></label><div class="row" style="margin-top:14px"><button class="btn primary" onclick="saveWeight()">Guardar</button><button class="btn secondary" onclick="closeModal('weightModal')">Cancelar</button></div></div></div>
+<div id="mealModal" class="modal"><div class="sheet">
+  <h2>Registrar comida</h2>
+  <label>Tipo<select id="mealType"><option value="breakfast">Desayuno</option><option value="lunch" selected>Almuerzo</option><option value="snack">Merienda</option><option value="pre_workout">Pre-entreno</option><option value="dinner">Cena</option><option value="other">Otra</option></select></label>
+  <label>Foto<input id="mealPhoto" type="file" accept="image/*" capture="environment"></label>
+  <label>Descripción<input id="mealDesc" placeholder="Ej.: pollo con arroz"></label>
+  <div class="grid">
+    <label>Calorías<input id="mealK" type="number" min="0" value="0"></label>
+    <label>Proteínas (g)<input id="mealP" type="number" min="0" value="0"></label>
+    <label>Carbohidratos (g)<input id="mealC" type="number" min="0" value="0"></label>
+    <label>Grasas (g)<input id="mealF" type="number" min="0" value="0"></label>
+  </div>
+  <div class="sheetActions"><button class="btn primary" onclick="saveMeal()">Guardar</button><button class="btn secondary" onclick="closeModal('mealModal')">Cancelar</button></div>
+</div></div>
+
+<div id="workoutModal" class="modal"><div class="sheet">
+  <h2>Registrar entrenamiento</h2>
+  <label>Actividad<select id="workoutType"><option>Gimnasio</option><option>Running</option><option>Tenis</option><option>Fútbol</option><option>Bicicleta</option><option>Descanso</option></select></label>
+  <label>Duración (min)<input id="workoutMin" type="number" min="0" value="60"></label>
+  <label>Calorías activas<input id="workoutKcal" type="number" min="0" value="0"></label>
+  <div class="sheetActions"><button class="btn primary" onclick="saveWorkout()">Guardar</button><button class="btn secondary" onclick="closeModal('workoutModal')">Cancelar</button></div>
+</div></div>
+
+<div id="weightModal" class="modal"><div class="sheet">
+  <h2>Registrar peso</h2>
+  <label>Peso (kg)<input id="weightValue" type="number" step="0.1" min="0"></label>
+  <div class="sheetActions"><button class="btn primary" onclick="saveWeight()">Guardar</button><button class="btn secondary" onclick="closeModal('weightModal')">Cancelar</button></div>
+</div></div>
+
 <div id="toast" class="toast"></div>
 
 <script>
 const SUPABASE_URL='https://xmsskgmlhwahjxkdheyk.supabase.co';
 const SUPABASE_KEY='sb_publishable_XObYr-_94MHmPOcuTIp9AA_NM4ROwr_';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let user=null, profile=null;
-const $=id=>document.getElementById(id), dayStart=()=>{const d=new Date();d.setHours(0,0,0,0);return d.toISOString()}, dayEnd=()=>{const d=new Date();d.setHours(23,59,59,999);return d.toISOString()};
-function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1700)}
-function closeModal(id){$(id).classList.remove('show')} function openMeal(){$('mealModal').classList.add('show')} function openWorkout(){$('workoutModal').classList.add('show')} function openWeight(){$('weightModal').classList.add('show')}
-async function login(){const {error}=await sb.auth.signInWithPassword({email:$('email').value,password:$('password').value});$('authMsg').textContent=error?error.message:'Ingresando…'}
-async function signup(){const {error}=await sb.auth.signUp({email:$('email').value,password:$('password').value});$('authMsg').textContent=error?error.message:'Cuenta creada. Revisá tu correo si Supabase solicita confirmación.'}
-async function logout(){await sb.auth.signOut()}
-async function ensureProfile(){let {data}=await sb.from('profiles').select('*').eq('user_id',user.id).maybeSingle();if(!data){await sb.from('profiles').insert({user_id:user.id,display_name:user.email?.split('@')[0]||'Usuario'});({data}=await sb.from('profiles').select('*').eq('user_id',user.id).single())}profile=data;$('waterGoal').value=profile.water_goal_ml||3000}
-async function saveProfile(){const water_goal_ml=+$('waterGoal').value;await sb.from('profiles').update({water_goal_ml,updated_at:new Date().toISOString()}).eq('user_id',user.id);profile.water_goal_ml=water_goal_ml;toast('Perfil guardado');refresh()}
-async function uploadMealImage(file){if(!file)return null;const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${user.id}/${crypto.randomUUID()}.${ext}`;const {error}=await sb.storage.from('meal-images').upload(path,file,{upsert:false});if(error)throw error;return path}
-async function saveMeal(){try{const file=$('mealPhoto').files[0],image_path=await uploadMealImage(file);const {error}=await sb.from('meals').insert({user_id:user.id,meal_type:$('mealType').value,description:$('mealDesc').value||'Comida',calories:+$('mealK').value,protein_g:+$('mealP').value,carbs_g:+$('mealC').value,fat_g:+$('mealF').value,image_path,analysis_status:'manual'});if(error)throw error;closeModal('mealModal');toast('Comida guardada');['mealDesc','mealK','mealP','mealC','mealF'].forEach(id=>$(id).value=id==='mealDesc'?'':'0');$('mealPhoto').value='';refresh()}catch(e){toast(e.message)}}
-async function saveWorkout(){const {error}=await sb.from('workouts').insert({user_id:user.id,activity_type:$('workoutType').value,duration_minutes:+$('workoutMin').value,active_calories:+$('workoutKcal').value,source:'manual'});if(error)return toast(error.message);closeModal('workoutModal');toast('Entrenamiento guardado');refresh()}
-async function saveWeight(){const {error}=await sb.from('weights').insert({user_id:user.id,weight_kg:+$('weightValue').value});if(error)return toast(error.message);closeModal('weightModal');toast('Peso guardado');refresh()}
-async function addWater(amount){const {error}=await sb.from('water_entries').insert({user_id:user.id,amount_ml:amount});if(error)return toast(error.message);toast(`+${amount} ml`);refresh()}
-async function deleteRow(table,id){await sb.from(table).delete().eq('id',id);refresh()}
-async function signedImage(path){if(!path)return null;const {data}=await sb.storage.from('meal-images').createSignedUrl(path,3600);return data?.signedUrl||null}
-async function refresh(){if(!user)return;const [{data:meals},{data:workouts},{data:weights},{data:water}]=await Promise.all([
- sb.from('meals').select('*').gte('eaten_at',dayStart()).lte('eaten_at',dayEnd()).order('eaten_at',{ascending:false}),
- sb.from('workouts').select('*').gte('started_at',dayStart()).lte('started_at',dayEnd()).order('started_at',{ascending:false}),
- sb.from('weights').select('*').order('measured_at',{ascending:false}).limit(20),
- sb.from('water_entries').select('*').gte('consumed_at',dayStart()).lte('consumed_at',dayEnd())]);
- const sum=(meals||[]).reduce((a,m)=>({k:a.k+m.calories,p:a.p+Number(m.protein_g),c:a.c+Number(m.carbs_g),f:a.f+Number(m.fat_g)}),{k:0,p:0,c:0,f:0});
- $('sumKcal').textContent=`${sum.k} kcal`;$('sumMacros').textContent=`P ${sum.p} · C ${sum.c} · G ${sum.f}`;$('sumActivity').textContent=`${(workouts||[]).reduce((a,w)=>a+w.active_calories,0)} kcal`;$('sumWater').textContent=`${(water||[]).reduce((a,w)=>a+w.amount_ml,0)} / ${profile?.water_goal_ml||3000} ml`;$('sumWeight').textContent=weights?.[0]?`${weights[0].weight_kg} kg`:'—';
- const mealTypes={breakfast:'Desayuno',lunch:'Almuerzo',snack:'Merienda',pre_workout:'Pre-entreno',dinner:'Cena',other:'Otra'};
- const tasks=[['lunch','Almuerzo'],['pre_workout','Pre-entreno'],['dinner','Cena'],['water','Agua'],['workout','Entrenamiento']];
- const waterTotal=(water||[]).reduce((a,w)=>a+w.amount_ml,0), workoutDone=(workouts||[]).length>0;
- $('tasks').innerHTML=tasks.map(([key,label])=>{let done=key==='water'?waterTotal>=(profile?.water_goal_ml||3000):key==='workout'?workoutDone:(meals||[]).some(m=>m.meal_type===key);return `<div class="task ${done?'done':''}"><div class="check">${done?'✓':'•'}</div><main><b>${label}</b><small class="muted">${done?'Completado':'Pendiente'}</small></main></div>`}).join('');
- $('mealList').innerHTML=(meals||[]).length?'Cargando…':'<div class="muted">Sin comidas hoy.</div>';
- const mealHtml=[];for(const m of meals||[]){const url=await signedImage(m.image_path);mealHtml.push(`<div class="item row">${url?`<img class="thumb" src="${url}">`:''}<main style="flex:1"><b>${mealTypes[m.meal_type]||m.meal_type}</b><div>${m.description}</div><small class="muted">${m.calories} kcal · P ${m.protein_g} · C ${m.carbs_g} · G ${m.fat_g}</small></main><button class="btn danger" onclick="deleteRow('meals','${m.id}')">Borrar</button></div>`)}$('mealList').innerHTML=mealHtml.join('')||'<div class="muted">Sin comidas hoy.</div>';
- $('workoutList').innerHTML=(workouts||[]).map(w=>`<div class="item row"><main style="flex:1"><b>${w.activity_type}</b><div class="muted">${w.duration_minutes} min · ${w.active_calories} kcal</div></main><button class="btn danger" onclick="deleteRow('workouts','${w.id}')">Borrar</button></div>`).join('')||'<div class="muted">Sin entrenamientos hoy.</div>';
- $('weightList').innerHTML=(weights||[]).map(w=>`<div class="item"><b>${w.weight_kg} kg</b><div class="muted">${new Date(w.measured_at).toLocaleDateString('es-AR')}</div></div>`).join('')||'<div class="muted">Sin registros.</div>';
+const $=id=>document.getElementById(id);
+let user=null,profile=null,currentMeals=[],currentWorkouts=[],currentWeights=[],currentWater=[];
+const defaultTasks={breakfast:false,lunch:true,snack:false,pre_workout:true,dinner:true,creatine:true,water:true,workout:true,weight:true};
+
+function dayStart(){const d=new Date();d.setHours(0,0,0,0);return d.toISOString()}
+function dayEnd(){const d=new Date();d.setHours(23,59,59,999);return d.toISOString()}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
+function openMeal(type='lunch'){$('mealType').value=type;$('mealModal').classList.add('show')}
+function openWorkout(){$('workoutModal').classList.add('show')}
+function openWeight(){$('weightModal').classList.add('show')}
+function closeModal(id){$(id).classList.remove('show')}
+
+async function login(){
+ const {error}=await sb.auth.signInWithPassword({email:$('email').value,password:$('password').value});
+ $('authMsg').textContent=error?error.message:'Ingresando…';
 }
-async function showApp(session){user=session?.user||null;if(!user){$('auth').classList.remove('hidden');$('main').classList.add('hidden');$('nav').classList.add('hidden');return}$('auth').classList.add('hidden');$('main').classList.remove('hidden');$('nav').classList.remove('hidden');await ensureProfile();refresh()}
-sb.auth.onAuthStateChange((_e,session)=>showApp(session));sb.auth.getSession().then(({data})=>showApp(data.session));
+async function signup(){
+ const {error}=await sb.auth.signUp({email:$('email').value,password:$('password').value});
+ $('authMsg').textContent=error?error.message:'Cuenta creada. Revisá tu correo si te pide confirmación.';
+}
+async function logout(){await sb.auth.signOut()}
+
+async function ensureProfile(){
+ let {data,error}=await sb.from('profiles').select('*').eq('user_id',user.id).maybeSingle();
+ if(error)throw error;
+ if(!data){
+   const {error:insertError}=await sb.from('profiles').insert({user_id:user.id,display_name:user.email?.split('@')[0]||'Usuario',task_settings:defaultTasks});
+   if(insertError)throw insertError;
+   ({data}=await sb.from('profiles').select('*').eq('user_id',user.id).single());
+ }
+ profile=data;
+ profile.task_settings={...defaultTasks,...(profile.task_settings||{})};
+ loadProfileForm();
+}
+function loadProfileForm(){
+ const t=profile.task_settings;
+ $('setBreakfast').checked=t.breakfast;$('setLunch').checked=t.lunch;$('setSnack').checked=t.snack;$('setPre').checked=t.pre_workout;
+ $('setDinner').checked=t.dinner;$('setCreatine').checked=t.creatine;$('setWater').checked=t.water;$('setWorkout').checked=t.workout;
+ $('waterGoal').value=profile.water_goal_ml||3000;
+}
+async function saveProfile(){
+ const task_settings={breakfast:$('setBreakfast').checked,lunch:$('setLunch').checked,snack:$('setSnack').checked,pre_workout:$('setPre').checked,dinner:$('setDinner').checked,creatine:$('setCreatine').checked,water:$('setWater').checked,workout:$('setWorkout').checked,weight:true};
+ const water_goal_ml=+$('waterGoal').value||3000;
+ const {error}=await sb.from('profiles').update({task_settings,water_goal_ml,updated_at:new Date().toISOString()}).eq('user_id',user.id);
+ if(error)return toast(error.message);
+ profile={...profile,task_settings,water_goal_ml};toast('Configuración guardada');render();
+}
+
+async function uploadMealImage(file){
+ if(!file)return null;
+ const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+ const path=`${user.id}/${crypto.randomUUID()}.${ext}`;
+ const {error}=await sb.storage.from('meal-images').upload(path,file,{upsert:false});
+ if(error)throw error;
+ return path;
+}
+async function saveMeal(){
+ try{
+   const image_path=await uploadMealImage($('mealPhoto').files[0]);
+   const {error}=await sb.from('meals').insert({
+     user_id:user.id,meal_type:$('mealType').value,description:$('mealDesc').value||'Comida',
+     calories:+$('mealK').value||0,protein_g:+$('mealP').value||0,carbs_g:+$('mealC').value||0,fat_g:+$('mealF').value||0,
+     image_path,analysis_status:'manual'
+   });
+   if(error)throw error;
+   closeModal('mealModal');$('mealPhoto').value='';$('mealDesc').value='';['mealK','mealP','mealC','mealF'].forEach(id=>$(id).value='0');
+   toast('Comida guardada');await refresh();
+ }catch(e){toast(e.message)}
+}
+async function saveWorkout(){
+ const {error}=await sb.from('workouts').insert({user_id:user.id,activity_type:$('workoutType').value,duration_minutes:+$('workoutMin').value||0,active_calories:+$('workoutKcal').value||0,source:'manual'});
+ if(error)return toast(error.message);closeModal('workoutModal');toast('Entrenamiento guardado');await refresh();
+}
+async function saveWeight(){
+ const value=+$('weightValue').value;if(!value)return toast('Ingresá un peso válido');
+ const {error}=await sb.from('weights').insert({user_id:user.id,weight_kg:value});
+ if(error)return toast(error.message);closeModal('weightModal');$('weightValue').value='';toast('Peso guardado');await refresh();
+}
+async function addWater(amount){
+ const {error}=await sb.from('water_entries').insert({user_id:user.id,amount_ml:amount});
+ if(error)return toast(error.message);toast(`+${amount} ml`);await refresh();
+}
+async function deleteRow(table,id){
+ const {error}=await sb.from(table).delete().eq('id',id);
+ if(error)return toast(error.message);await refresh();
+}
+async function signedImage(path){
+ if(!path)return null;
+ const {data}=await sb.storage.from('meal-images').createSignedUrl(path,3600);
+ return data?.signedUrl||null;
+}
+
+async function refresh(){
+ if(!user)return;
+ const [{data:meals,error:me},{data:workouts,error:we},{data:weights,error:wge},{data:water,error:wae}]=await Promise.all([
+   sb.from('meals').select('*').gte('eaten_at',dayStart()).lte('eaten_at',dayEnd()).order('eaten_at',{ascending:false}),
+   sb.from('workouts').select('*').gte('started_at',dayStart()).lte('started_at',dayEnd()).order('started_at',{ascending:false}),
+   sb.from('weights').select('*').order('measured_at',{ascending:false}).limit(30),
+   sb.from('water_entries').select('*').gte('consumed_at',dayStart()).lte('consumed_at',dayEnd())
+ ]);
+ if(me||we||wge||wae)return toast((me||we||wge||wae).message);
+ currentMeals=meals||[];currentWorkouts=workouts||[];currentWeights=weights||[];currentWater=water||[];
+ await render();
+}
+
+async function render(){
+ const totals=currentMeals.reduce((a,m)=>({k:a.k+m.calories,p:a.p+Number(m.protein_g),c:a.c+Number(m.carbs_g),f:a.f+Number(m.fat_g)}),{k:0,p:0,c:0,f:0});
+ const waterTotal=currentWater.reduce((a,w)=>a+w.amount_ml,0),waterGoal=profile?.water_goal_ml||3000;
+ $('sumKcal').textContent=`${totals.k} kcal`;
+ $('sumMacros').textContent=`P ${totals.p} g · C ${totals.c} g · G ${totals.f} g`;
+ $('sumActivity').textContent=`${currentWorkouts.reduce((a,w)=>a+w.active_calories,0)} kcal`;
+ $('sumWater').textContent=`${waterTotal} / ${waterGoal} ml`;
+ $('waterBar').style.width=Math.min(100,waterTotal/waterGoal*100)+'%';
+ $('sumWeight').textContent=currentWeights[0]?`${currentWeights[0].weight_kg} kg`:'—';
+
+ const t=profile?.task_settings||defaultTasks;
+ const weekday=new Date().getDay(),weightToday=[1,3,5].includes(weekday);
+ const defs=[];
+ if(weightToday)defs.push(['weight','⚖','Peso']);
+ [['breakfast','☀','Desayuno'],['lunch','🍴','Almuerzo'],['snack','☕','Merienda'],['pre_workout','⚡','Pre-entreno'],['dinner','🌙','Cena'],['creatine','◆','Creatina'],['water','💧','Agua'],['workout','🏋','Entrenamiento']].forEach(d=>{if(t[d[0]])defs.push(d)});
+ $('tasks').innerHTML=defs.map(([key,icon,label])=>{
+   let done=false,action='';
+   if(['breakfast','lunch','snack','pre_workout','dinner'].includes(key)){done=currentMeals.some(m=>m.meal_type===key);action=`openMeal('${key}')`}
+   else if(key==='water'){done=waterTotal>=waterGoal;action='addWater(500)'}
+   else if(key==='workout'){done=currentWorkouts.length>0;action='openWorkout()'}
+   else if(key==='weight'){done=currentWeights.some(w=>new Date(w.measured_at).toDateString()===new Date().toDateString());action='openWeight()'}
+   else {done=false;action=`toast('Esta tarea se marcará desde Perfil en la próxima versión')`}
+   return `<div class="task ${done?'done':''}" onclick="${action}"><div class="check">${done?'✓':icon}</div><main><b>${label}</b><small class="muted">${done?'Completado':'Tocá para registrar'}</small></main><div class="go">›</div></div>`;
+ }).join('');
+
+ const labels={breakfast:'Desayuno',lunch:'Almuerzo',snack:'Merienda',pre_workout:'Pre-entreno',dinner:'Cena',other:'Otra'};
+ const html=[];
+ for(const m of currentMeals){
+   const url=await signedImage(m.image_path);
+   html.push(`<div class="item">${url?`<img class="thumb" src="${url}">`:''}<main><b>${labels[m.meal_type]||m.meal_type}</b><div>${m.description}</div><small class="muted">${m.calories} kcal · P ${m.protein_g} · C ${m.carbs_g} · G ${m.fat_g}</small></main><button class="btn danger" onclick="deleteRow('meals','${m.id}')">Borrar</button></div>`);
+ }
+ $('mealList').innerHTML=html.join('')||'<div class="empty">Todavía no registraste comidas hoy.</div>';
+ $('workoutList').innerHTML=currentWorkouts.map(w=>`<div class="item"><main><b>${w.activity_type}</b><div class="muted">${w.duration_minutes} min · ${w.active_calories} kcal activas</div></main><button class="btn danger" onclick="deleteRow('workouts','${w.id}')">Borrar</button></div>`).join('')||'<div class="empty">Sin entrenamientos hoy.</div>';
+ $('weightList').innerHTML=currentWeights.map(w=>`<div class="item"><main><b>${w.weight_kg} kg</b><div class="muted">${new Date(w.measured_at).toLocaleDateString('es-AR')}</div></main></div>`).join('')||'<div class="empty">Sin registros de peso.</div>';
+}
+
+async function showApp(session){
+ user=session?.user||null;
+ if(!user){$('auth').classList.remove('hidden');$('main').classList.add('hidden');$('nav').classList.add('hidden');return}
+ $('auth').classList.add('hidden');$('main').classList.remove('hidden');$('nav').classList.remove('hidden');
+ try{await ensureProfile();await refresh()}catch(e){toast(e.message)}
+}
+sb.auth.onAuthStateChange((_event,session)=>showApp(session));
+sb.auth.getSession().then(({data})=>showApp(data.session));
 $('todayLabel').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.page).classList.add('active');scrollTo(0,0)});
 document.querySelectorAll('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)closeModal(m.id)});
