@@ -7,19 +7,25 @@
 <title>Physique du rôle</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#09090b;--card:#151518;--line:#2b2c32;--gold:#d3ad5c;--text:#fff;--muted:#a6a7af;--danger:#ff8292}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+:root{--bg:#09090b;--card:#151518;--line:#2b2c32;--gold:#d3ad5c;--text:#fff;--muted:#a6a7af;--danger:#ff8292;--blue:#5aa7ff;--green:#61d66f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 75% -10%,#d3ad5c17,transparent 32%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
 button,input,select,textarea{font:inherit}.hidden{display:none!important}.app{max-width:760px;margin:auto;padding:20px 16px 112px}
 .brand{font-size:34px;font-weight:900;letter-spacing:-1.2px}.gold{color:var(--gold)}.muted{color:var(--muted)}
 .card{background:linear-gradient(145deg,#ffffff08,#ffffff02),var(--card);border:1px solid var(--line);border-radius:22px}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.date{color:var(--gold);font-weight:800;text-transform:capitalize;margin-top:4px}
-.btn{border:0;border-radius:14px;padding:13px 16px;font-weight:900;cursor:pointer}.primary{background:var(--gold);color:#111}.secondary{background:#222329;color:#fff}.danger{background:#3d1b22;color:var(--danger)}
+.btn{border:0;border-radius:14px;padding:13px 16px;font-weight:900;cursor:pointer;transition:transform .15s ease,opacity .15s ease}.btn:active{transform:scale(.97)}
+.primary{background:var(--gold);color:#111}.secondary{background:#222329;color:#fff}.danger{background:#3d1b22;color:var(--danger)}
+.hero{margin-top:16px;padding:20px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}
+.hero h2{margin:0 0 8px;font-size:25px}.ring{--p:0;width:118px;height:118px;border-radius:50%;background:conic-gradient(var(--gold) calc(var(--p)*1%),#292b31 0);display:grid;place-items:center;position:relative;transition:background .4s ease}
+.ring:after{content:"";position:absolute;inset:11px;background:#111216;border-radius:50%}.ring b{position:relative;z-index:1;font-size:29px;color:var(--gold)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.metric{padding:20px}.metric strong{display:block;font-size:29px;margin:9px 0 4px}
-.bar{height:8px;background:#2b2d33;border-radius:999px;overflow:hidden;margin-top:12px}.bar span{display:block;height:100%;background:var(--gold)}
-.section{margin-top:26px}.section h2{font-size:25px;margin:0 0 12px}.tasks{padding:0 18px}.task{display:flex;align-items:center;gap:14px;min-height:82px;border-bottom:1px solid var(--line)}
-.task:last-child{border-bottom:0}.check{width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-weight:900;flex:0 0 auto}
+.bar{height:9px;background:#2b2d33;border-radius:999px;overflow:hidden;margin-top:12px}.bar span{display:block;height:100%;background:var(--gold);transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.waterCard{position:relative;overflow:hidden}.waterWave{position:absolute;left:0;bottom:0;height:0%;width:100%;background:linear-gradient(180deg,#5aa7ff22,#5aa7ff18);transition:height .45s ease;pointer-events:none}
+.waterCard>*{position:relative;z-index:1}.section{margin-top:26px}.section h2{font-size:25px;margin:0 0 12px}
+.tasks{padding:0 18px}.task{display:flex;align-items:center;gap:14px;min-height:82px;border-bottom:1px solid var(--line);cursor:pointer}
+.task:last-child{border-bottom:0}.check{width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-weight:900;flex:0 0 auto;transition:.2s}
 .task.done .check{background:var(--gold);color:#111}.task main{flex:1;min-width:0}.task b{display:block;font-size:18px}.task small{display:block;margin-top:4px}.task .go{font-size:25px;color:#777}
-.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.quick button{padding:11px 8px}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.quick button{padding:11px 8px}.quick.minus button{color:#ffb4bf}
 .nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,760px);display:grid;grid-template-columns:repeat(5,1fr);background:#101014f2;border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:10}
 .nav button{background:none;border:0;color:#85858e;padding:6px 2px}.nav button b{display:block;font-size:19px}.nav button small{font-size:11px}.nav button.active{color:var(--gold)}
 .page{display:none}.page.active{display:block}.pageTitle{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
@@ -30,9 +36,10 @@ input,select,textarea{width:100%;margin-top:7px;background:#0d0e11;border:1px so
 .modal{position:fixed;inset:0;background:#000c;display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:20}.modal.show{display:flex}
 .sheet{width:min(100%,720px);max-height:92vh;overflow:auto;background:#17181c;border:1px solid #34363e;border-radius:24px 24px 16px 16px;padding:20px}
 .sheet h2{margin:0 0 12px}.sheet label{display:block;margin:11px 0}.sheetActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.settings{padding:4px 18px}.setting{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)}
-.setting:last-child{border-bottom:0}.toast{position:fixed;left:50%;bottom:102px;transform:translateX(-50%);background:#23252b;border:1px solid #3b3e46;padding:11px 16px;border-radius:999px;display:none;z-index:30}.toast.show{display:block}
-@media(max-width:560px){.grid{grid-template-columns:1fr}.brand{font-size:31px}.quick{grid-template-columns:repeat(2,1fr)}}
+.settings{padding:4px 18px}.setting{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)}.setting:last-child{border-bottom:0}
+.analysisHint{padding:12px 14px;border:1px dashed #474a52;border-radius:14px;color:var(--muted);margin:12px 0}.analysisHint b{color:var(--gold)}
+.toast{position:fixed;left:50%;bottom:102px;transform:translateX(-50%);background:#23252b;border:1px solid #3b3e46;padding:11px 16px;border-radius:999px;display:none;z-index:30}.toast.show{display:block}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.brand{font-size:31px}.quick{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr auto}.ring{width:104px;height:104px}}
 </style>
 </head>
 <body>
@@ -59,6 +66,11 @@ input,select,textarea{width:100%;margin-top:7px;background:#0d0e11;border:1px so
       <button class="btn secondary" onclick="logout()">Salir</button>
     </div>
 
+    <div class="card hero">
+      <div><h2 id="heroText">Seguí construyendo tu día</h2><div id="heroSub" class="muted">0 de 0 tareas completadas</div></div>
+      <div id="progressRing" class="ring"><b id="progressPct">0%</b></div>
+    </div>
+
     <div class="grid">
       <div class="card metric">
         <span class="muted">Consumido</span><strong id="sumKcal">0 kcal</strong>
@@ -68,13 +80,19 @@ input,select,textarea{width:100%;margin-top:7px;background:#0d0e11;border:1px so
         <span class="muted">Actividad</span><strong id="sumActivity">0 kcal</strong>
         <small class="muted">Carga manual por ahora</small>
       </div>
-      <div class="card metric">
+      <div class="card metric waterCard">
+        <div id="waterWave" class="waterWave"></div>
         <span class="muted">Agua</span><strong id="sumWater">0 / 3000 ml</strong>
         <div class="bar"><span id="waterBar" style="width:0%"></span></div>
         <div class="quick">
           <button class="btn secondary" onclick="addWater(250)">+250</button>
           <button class="btn secondary" onclick="addWater(500)">+500</button>
           <button class="btn secondary" onclick="addWater(750)">+750</button>
+        </div>
+        <div class="quick minus">
+          <button class="btn secondary" onclick="removeWater(250)">−250</button>
+          <button class="btn secondary" onclick="removeWater(500)">−500</button>
+          <button class="btn secondary" onclick="removeWater(750)">−750</button>
         </div>
       </div>
       <div class="card metric">
@@ -131,6 +149,7 @@ input,select,textarea{width:100%;margin-top:7px;background:#0d0e11;border:1px so
 
 <div id="mealModal" class="modal"><div class="sheet">
   <h2>Registrar comida</h2>
+  <div class="analysisHint"><b>Próximo paso:</b> la foto podrá completar automáticamente una propuesta editable de alimentos y macros. En esta Beta todavía confirmás los valores manualmente.</div>
   <label>Tipo<select id="mealType"><option value="breakfast">Desayuno</option><option value="lunch" selected>Almuerzo</option><option value="snack">Merienda</option><option value="pre_workout">Pre-entreno</option><option value="dinner">Cena</option><option value="other">Otra</option></select></label>
   <label>Foto<input id="mealPhoto" type="file" accept="image/*" capture="environment"></label>
   <label>Descripción<input id="mealDesc" placeholder="Ej.: pollo con arroz"></label>
@@ -175,14 +194,8 @@ function openWorkout(){$('workoutModal').classList.add('show')}
 function openWeight(){$('weightModal').classList.add('show')}
 function closeModal(id){$(id).classList.remove('show')}
 
-async function login(){
- const {error}=await sb.auth.signInWithPassword({email:$('email').value,password:$('password').value});
- $('authMsg').textContent=error?error.message:'Ingresando…';
-}
-async function signup(){
- const {error}=await sb.auth.signUp({email:$('email').value,password:$('password').value});
- $('authMsg').textContent=error?error.message:'Cuenta creada. Revisá tu correo si te pide confirmación.';
-}
+async function login(){const {error}=await sb.auth.signInWithPassword({email:$('email').value,password:$('password').value});$('authMsg').textContent=error?error.message:'Ingresando…'}
+async function signup(){const {error}=await sb.auth.signUp({email:$('email').value,password:$('password').value});$('authMsg').textContent=error?error.message:'Cuenta creada. Revisá tu correo si te pide confirmación.'}
 async function logout(){await sb.auth.signOut()}
 
 async function ensureProfile(){
@@ -193,15 +206,12 @@ async function ensureProfile(){
    if(insertError)throw insertError;
    ({data}=await sb.from('profiles').select('*').eq('user_id',user.id).single());
  }
- profile=data;
- profile.task_settings={...defaultTasks,...(profile.task_settings||{})};
- loadProfileForm();
+ profile=data; profile.task_settings={...defaultTasks,...(profile.task_settings||{})}; loadProfileForm();
 }
 function loadProfileForm(){
  const t=profile.task_settings;
  $('setBreakfast').checked=t.breakfast;$('setLunch').checked=t.lunch;$('setSnack').checked=t.snack;$('setPre').checked=t.pre_workout;
- $('setDinner').checked=t.dinner;$('setCreatine').checked=t.creatine;$('setWater').checked=t.water;$('setWorkout').checked=t.workout;
- $('waterGoal').value=profile.water_goal_ml||3000;
+ $('setDinner').checked=t.dinner;$('setCreatine').checked=t.creatine;$('setWater').checked=t.water;$('setWorkout').checked=t.workout;$('waterGoal').value=profile.water_goal_ml||3000;
 }
 async function saveProfile(){
  const task_settings={breakfast:$('setBreakfast').checked,lunch:$('setLunch').checked,snack:$('setSnack').checked,pre_workout:$('setPre').checked,dinner:$('setDinner').checked,creatine:$('setCreatine').checked,water:$('setWater').checked,workout:$('setWorkout').checked,weight:true};
@@ -216,8 +226,7 @@ async function uploadMealImage(file){
  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
  const path=`${user.id}/${crypto.randomUUID()}.${ext}`;
  const {error}=await sb.storage.from('meal-images').upload(path,file,{upsert:false});
- if(error)throw error;
- return path;
+ if(error)throw error; return path;
 }
 async function saveMeal(){
  try{
@@ -245,6 +254,24 @@ async function addWater(amount){
  const {error}=await sb.from('water_entries').insert({user_id:user.id,amount_ml:amount});
  if(error)return toast(error.message);toast(`+${amount} ml`);await refresh();
 }
+async function removeWater(amount){
+ let remaining=amount;
+ const entries=[...currentWater].sort((a,b)=>new Date(b.consumed_at)-new Date(a.consumed_at));
+ if(!entries.length)return toast('No hay agua para descontar');
+ for(const entry of entries){
+   if(remaining<=0)break;
+   if(entry.amount_ml<=remaining){
+     const {error}=await sb.from('water_entries').delete().eq('id',entry.id);
+     if(error)return toast(error.message);
+     remaining-=entry.amount_ml;
+   }else{
+     const {error}=await sb.from('water_entries').update({amount_ml:entry.amount_ml-remaining}).eq('id',entry.id);
+     if(error)return toast(error.message);
+     remaining=0;
+   }
+ }
+ toast(`−${amount-remaining} ml`);await refresh();
+}
 async function deleteRow(table,id){
  const {error}=await sb.from(table).delete().eq('id',id);
  if(error)return toast(error.message);await refresh();
@@ -261,11 +288,10 @@ async function refresh(){
    sb.from('meals').select('*').gte('eaten_at',dayStart()).lte('eaten_at',dayEnd()).order('eaten_at',{ascending:false}),
    sb.from('workouts').select('*').gte('started_at',dayStart()).lte('started_at',dayEnd()).order('started_at',{ascending:false}),
    sb.from('weights').select('*').order('measured_at',{ascending:false}).limit(30),
-   sb.from('water_entries').select('*').gte('consumed_at',dayStart()).lte('consumed_at',dayEnd())
+   sb.from('water_entries').select('*').gte('consumed_at',dayStart()).lte('consumed_at',dayEnd()).order('consumed_at',{ascending:false})
  ]);
  if(me||we||wge||wae)return toast((me||we||wge||wae).message);
- currentMeals=meals||[];currentWorkouts=workouts||[];currentWeights=weights||[];currentWater=water||[];
- await render();
+ currentMeals=meals||[];currentWorkouts=workouts||[];currentWeights=weights||[];currentWater=water||[];await render();
 }
 
 async function render(){
@@ -275,23 +301,28 @@ async function render(){
  $('sumMacros').textContent=`P ${totals.p} g · C ${totals.c} g · G ${totals.f} g`;
  $('sumActivity').textContent=`${currentWorkouts.reduce((a,w)=>a+w.active_calories,0)} kcal`;
  $('sumWater').textContent=`${waterTotal} / ${waterGoal} ml`;
- $('waterBar').style.width=Math.min(100,waterTotal/waterGoal*100)+'%';
+ const waterPct=Math.min(100,waterTotal/waterGoal*100);
+ $('waterBar').style.width=waterPct+'%';$('waterWave').style.height=Math.min(100,waterPct*.36)+'%';
  $('sumWeight').textContent=currentWeights[0]?`${currentWeights[0].weight_kg} kg`:'—';
 
- const t=profile?.task_settings||defaultTasks;
- const weekday=new Date().getDay(),weightToday=[1,3,5].includes(weekday);
- const defs=[];
+ const t=profile?.task_settings||defaultTasks,weekday=new Date().getDay(),weightToday=[1,3,5].includes(weekday),defs=[];
  if(weightToday)defs.push(['weight','⚖','Peso']);
  [['breakfast','☀','Desayuno'],['lunch','🍴','Almuerzo'],['snack','☕','Merienda'],['pre_workout','⚡','Pre-entreno'],['dinner','🌙','Cena'],['creatine','◆','Creatina'],['water','💧','Agua'],['workout','🏋','Entrenamiento']].forEach(d=>{if(t[d[0]])defs.push(d)});
- $('tasks').innerHTML=defs.map(([key,icon,label])=>{
+ let completed=0;
+ const taskHtml=defs.map(([key,icon,label])=>{
    let done=false,action='';
    if(['breakfast','lunch','snack','pre_workout','dinner'].includes(key)){done=currentMeals.some(m=>m.meal_type===key);action=`openMeal('${key}')`}
    else if(key==='water'){done=waterTotal>=waterGoal;action='addWater(500)'}
    else if(key==='workout'){done=currentWorkouts.length>0;action='openWorkout()'}
    else if(key==='weight'){done=currentWeights.some(w=>new Date(w.measured_at).toDateString()===new Date().toDateString());action='openWeight()'}
-   else {done=false;action=`toast('Esta tarea se marcará desde Perfil en la próxima versión')`}
+   else {done=false;action=`toast('Esta tarea se podrá marcar manualmente en la próxima versión')`}
+   if(done)completed++;
    return `<div class="task ${done?'done':''}" onclick="${action}"><div class="check">${done?'✓':icon}</div><main><b>${label}</b><small class="muted">${done?'Completado':'Tocá para registrar'}</small></main><div class="go">›</div></div>`;
  }).join('');
+ $('tasks').innerHTML=taskHtml;
+ const pct=defs.length?Math.round(completed/defs.length*100):0;
+ $('progressRing').style.setProperty('--p',pct);$('progressPct').textContent=pct+'%';$('heroSub').textContent=`${completed} de ${defs.length} tareas completadas`;
+ $('heroText').textContent=pct===100?'¡Día completado!':pct>=60?'Vas muy bien':'Seguí construyendo tu día';
 
  const labels={breakfast:'Desayuno',lunch:'Almuerzo',snack:'Merienda',pre_workout:'Pre-entreno',dinner:'Cena',other:'Otra'};
  const html=[];
