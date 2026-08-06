@@ -45,6 +45,16 @@ input,select,textarea{width:100%;margin-top:7px;background:#0d0e11;border:1px so
 .settings{padding:4px 18px}.setting{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)}.setting:last-child{border-bottom:0}
 .analysisHint{padding:12px 14px;border:1px dashed #474a52;border-radius:14px;color:var(--muted);margin:12px 0}.analysisHint b{color:var(--gold)}
 .toast{position:fixed;left:50%;bottom:102px;transform:translateX(-50%);background:#23252b;border:1px solid #3b3e46;padding:11px 16px;border-radius:999px;display:none;z-index:30}.toast.show{display:block}
+
+.healthCard{padding:20px;margin-top:16px}
+.healthGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.healthMetric{background:#101216;border:1px solid #2d3038;border-radius:16px;padding:12px}
+.healthMetric span{display:block;color:var(--muted);font-size:12px}
+.healthMetric b{display:block;font-size:22px;margin-top:6px}
+.healthActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.healthStatus{margin-top:10px;color:var(--muted);font-size:13px}
+@media(max-width:560px){.healthGrid{grid-template-columns:1fr 1fr}}
+
 @media(max-width:560px){.grid{grid-template-columns:1fr}.brand{font-size:31px}.quick{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr auto}.ring{width:104px;height:104px}}
 </style>
 </head>
@@ -106,6 +116,28 @@ input,select,textarea{width:100%;margin-top:7px;background:#0d0e11;border:1px so
         <span class="muted">Peso</span><strong id="sumWeight">—</strong>
         <button class="btn secondary" style="margin-top:10px" onclick="openWeight()">Registrar</button>
       </div>
+    </div>
+
+
+    <div class="card healthCard">
+      <div class="row between">
+        <div>
+          <h2 style="margin:0">Reloj</h2>
+          <div class="muted">Health Connect · lectura del día</div>
+        </div>
+        <span class="gold">⌚</span>
+      </div>
+      <div class="healthGrid">
+        <div class="healthMetric"><span>Pasos</span><b id="healthSteps">—</b></div>
+        <div class="healthMetric"><span>Calorías activas</span><b id="healthActive">—</b></div>
+        <div class="healthMetric"><span>Sueño</span><b id="healthSleep">—</b></div>
+        <div class="healthMetric"><span>FC prom.</span><b id="healthHr">—</b></div>
+      </div>
+      <div class="healthActions">
+        <button class="btn secondary" onclick="connectHealth()">Conectar reloj</button>
+        <button class="btn primary" onclick="syncHealth()">Sincronizar ahora</button>
+      </div>
+      <div id="healthStatus" class="healthStatus">En la web seguirá funcionando todo lo demás. Health Connect se activa dentro de la app Android.</div>
     </div>
 
     <div class="section">
@@ -384,11 +416,85 @@ async function render(){
  $('weightList').innerHTML=currentWeights.map(w=>`<div class="item"><main><b>${w.weight_kg} kg</b><div class="muted">${new Date(w.measured_at).toLocaleDateString('es-AR')}</div></main></div>`).join('')||'<div class="empty">Sin registros de peso.</div>';
 }
 
+
+function healthPlugin(){
+  return window.Capacitor?.Plugins?.HealthConnectBridge || null;
+}
+function fmtSleep(minutes){
+  if(minutes===null || minutes===undefined)return '—';
+  const h=Math.floor(minutes/60), m=Math.round(minutes%60);
+  return `${h}h ${String(m).padStart(2,'0')}`;
+}
+async function connectHealth(){
+  const plugin=healthPlugin();
+  if(!plugin){
+    $('healthStatus').textContent='Health Connect estará disponible al ejecutar esta versión dentro de la app Android.';
+    return;
+  }
+  try{
+    const availability=await plugin.isAvailable();
+    if(!availability.available){
+      $('healthStatus').textContent='Health Connect no está disponible o necesita actualizarse en este teléfono.';
+      return;
+    }
+    await plugin.requestPermissions();
+    $('healthStatus').textContent='Permisos solicitados. Cuando los aceptes, tocá “Sincronizar ahora”.';
+  }catch(e){
+    $('healthStatus').textContent=e.message||'No se pudo abrir Health Connect.';
+  }
+}
+async function syncHealth(){
+  const plugin=healthPlugin();
+  if(!plugin){
+    $('healthStatus').textContent='Esta función se activa en la versión Android.';
+    return;
+  }
+  try{
+    $('healthStatus').textContent='Leyendo datos del reloj…';
+    const data=await plugin.readToday();
+    $('healthSteps').textContent=Number(data.steps||0).toLocaleString('es-AR');
+    $('healthActive').textContent=`${Math.round(Number(data.activeCalories||0))} kcal`;
+    $('healthSleep').textContent=fmtSleep(Number(data.sleepMinutes||0));
+    $('healthHr').textContent=data.avgHeartRate?`${Math.round(data.avgHeartRate)} ppm`:'—';
+
+    const healthDate=todayDateKey();
+    const payload={
+      user_id:user.id,
+      health_date:healthDate,
+      steps:Math.max(0,Math.round(Number(data.steps||0))),
+      active_calories:Math.max(0,Math.round(Number(data.activeCalories||0))),
+      avg_heart_rate:data.avgHeartRate?Math.round(Number(data.avgHeartRate)):null,
+      sleep_minutes:Math.max(0,Math.round(Number(data.sleepMinutes||0))),
+      source:'health_connect',
+      raw_json:data,
+      synced_at:new Date().toISOString()
+    };
+    const {error}=await sb.from('health_daily').upsert(payload,{onConflict:'user_id,health_date,source'});
+    if(error)throw error;
+
+    $('sumActivity').textContent=`${payload.active_calories} kcal`;
+    $('healthStatus').textContent=`Sincronizado ${new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}.`;
+  }catch(e){
+    $('healthStatus').textContent=e.message||'No se pudieron sincronizar los datos.';
+  }
+}
+async function loadHealthFromCloud(){
+  if(!user)return;
+  const {data,error}=await sb.from('health_daily').select('*').eq('health_date',todayDateKey()).eq('source','health_connect').maybeSingle();
+  if(error||!data)return;
+  $('healthSteps').textContent=Number(data.steps||0).toLocaleString('es-AR');
+  $('healthActive').textContent=`${Number(data.active_calories||0)} kcal`;
+  $('healthSleep').textContent=fmtSleep(Number(data.sleep_minutes||0));
+  $('healthHr').textContent=data.avg_heart_rate?`${data.avg_heart_rate} ppm`:'—';
+  $('sumActivity').textContent=`${Number(data.active_calories||0)} kcal`;
+  $('healthStatus').textContent=`Última sincronización: ${new Date(data.synced_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}.`;
+}
+
 async function showApp(session){
  user=session?.user||null;
  if(!user){$('auth').classList.remove('hidden');$('main').classList.add('hidden');$('nav').classList.add('hidden');return}
  $('auth').classList.add('hidden');$('main').classList.remove('hidden');$('nav').classList.remove('hidden');
- try{await ensureProfile();await refresh()}catch(e){toast(e.message)}
+ try{await ensureProfile();await refresh();await loadHealthFromCloud()}catch(e){toast(e.message)}
 }
 sb.auth.onAuthStateChange((_event,session)=>showApp(session));
 sb.auth.getSession().then(({data})=>showApp(data.session));
